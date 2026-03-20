@@ -68,7 +68,7 @@ t.stop; g.free;
 | **Observers.scd** | 6 feature extractors: amplitude, pitch, centroid, flatness, onsets, zeroCrossing |
 | **GrowthModels.scd** | Convenience wrappers around AcGrowth class methods |
 
-## Key Concepts
+## Concepts
 
 ### Nodes & Edges
 
@@ -154,9 +154,9 @@ AcGrowth.preferentialAttachment(g, \clicks, {|rate = 8, amp = 0.1|
 
 ## Examples
 
-See the `examples/` folder:
+In `examples/` 
 
-| # | Name | What it demonstrates |
+| # | What | How |
 |---|------|---------------------|
 | 01 | Triangle | Minimal 3-node cycle with param mapping |
 | 02 | Two Walkers | Polyphonic traversal — slow layering + fast contrast |
