@@ -1,21 +1,10 @@
 # Accrete
 
-A graph-based compositional engine for SuperCollider. Sound is treated as behaviour in an evolving network — compose by building and traversing a graph of generative sound processes, where structure and sound co-evolve.
+A graph-based system for SuperCollider. Sound is treated as behaviour in an evolving network. Compose by building and traversing a graph of generative sound processes.
 
 ## Overview
 
-Accrete combines the **OF pattern** (classes + runtime-loadable `.scd` Event libraries + Ndefs) with **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. The network can grow, decay, and reshape itself — driven by code, by chance, or by the sound itself via observer feedback.
-
-## Installation
-
-Clone into your SuperCollider Extensions folder:
-
-```
-cd ~/Library/Application\ Support/SuperCollider/Extensions/
-git clone https://github.com/bjarnig/Accrete.git
-```
-
-Recompile the class library (`Cmd+Shift+L` in the IDE).
+Accrete combines the **OF pattern** (classes + runtime-loadable `.scd` Event libraries + Ndefs) with **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. 
 
 ## Quick Start
 
