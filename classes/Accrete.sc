@@ -6,7 +6,7 @@ Accrete {
 	}
 
 	init {|interpreter|
-		basePath = PathName(Accrete.filenameSymbol.asString).pathOnly.replace("Classes/", "src/");
+		basePath = PathName(Accrete.filenameSymbol.asString).pathOnly.replace("classes/", "src/");
 
 		behaviours = interpreter.compileFile(basePath ++ "Behaviours.scd").value;
 		processing = interpreter.compileFile(basePath ++ "Processing.scd").value;
