@@ -7,12 +7,12 @@ AcScope {
 	classvar <>colorInactive, <>colorActive, <>colorEdge, <>colorTraversal, <>colorText, <>colorBg;
 
 	*initClass {
-		colorBg = Color.new255(25, 25, 30);
-		colorInactive = Color.new255(80, 90, 110);
-		colorActive = Color.new255(120, 200, 160);
-		colorEdge = Color.new255(60, 65, 75);
-		colorTraversal = Color.new255(255, 180, 60);
-		colorText = Color.new255(200, 205, 215);
+		colorBg = Color.new255(23, 27, 33);           // #171b21
+		colorInactive = Color.new255(110, 120, 145);
+		colorActive = Color.new255(140, 225, 180);
+		colorEdge = Color.new255(80, 88, 100);
+		colorTraversal = Color.new255(255, 200, 80);
+		colorText = Color.new255(220, 225, 235);
 	}
 
 	*new {|graph, traversals, width = 700, height = 700, refreshRate = 10|
@@ -223,10 +223,10 @@ AcScope {
 
 	edgeTypeColor {|type|
 		^switch(type,
-			\succession,      Color.new255(100, 140, 180),
-			\contrast,        Color.new255(180, 100, 100),
-			\variation,       Color.new255(100, 180, 120),
-			\transformation,  Color.new255(180, 160, 80),
+			\succession,      Color.new255(120, 165, 210),
+			\contrast,        Color.new255(210, 120, 120),
+			\variation,       Color.new255(120, 210, 145),
+			\transformation,  Color.new255(210, 185, 95),
 			colorEdge
 		)
 	}
