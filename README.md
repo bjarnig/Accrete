@@ -1,12 +1,12 @@
 # Accrete
 
-![Accrete — graph-based compositional engine for SuperCollider](docs/Accrete.png)
+![Accrete, graph-based compositional engine for SuperCollider](docs/Accrete.png)
 
 A graph-based system for SuperCollider. Sound is treated as behaviour in an evolving network. Compose by building and traversing a graph of generative sound processes.
 
 ## Overview
 
-Accrete combines the **OF pattern** (classes + runtime-loadable `.scd` Event libraries + Ndefs) with **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. 
+Accrete cexplores **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. 
 
 ## Quick Start
 
@@ -30,7 +30,7 @@ g.connect(\drone, \grain, 0.7, \succession, Dictionary[\freq -> \freq]);
 g.connect(\grain, \pulse, 0.5, \contrast);
 g.connect(\pulse, \drone, 0.3, \variation);
 
-// Walk the graph — sound transitions as the walker moves
+// Walk the graph, sound transitions as the walker moves
 t = AcTraversal(\walk, g, { rrand(4.0, 8.0) }, fadeTime: 3);
 t.walk(\drone);
 
@@ -47,7 +47,7 @@ t.stop; g.free;
 
 ## Architecture
 
-### Classes (compiled `.sc`)
+### Classes
 
 | Class | Role |
 |-------|------|
@@ -61,7 +61,7 @@ t.stop; g.free;
 | **AcEvent** | Immutable causality record. Every action is logged. |
 | **AcScope** | Live GUI visualization with force-directed layout and draggable nodes. |
 
-### Runtime Libraries (`.scd` — no recompile needed)
+### Runtime
 
 | File | Contents |
 |------|----------|
@@ -70,19 +70,15 @@ t.stop; g.free;
 | **Observers.scd** | 6 feature extractors: amplitude, pitch, centroid, flatness, onsets, zeroCrossing |
 | **GrowthModels.scd** | Convenience wrappers around AcGrowth class methods |
 
-## Concepts
-
 ### Nodes & Edges
 
-Nodes wrap Ndefs. Any `{|args| UGen}` function works as a behaviour — use the presets or write your own inline. Edges are directed, weighted, and typed (`\succession`, `\contrast`, `\variation`, `\transformation`). Edges can carry a **paramMap** that propagates parameter values when a walker crosses them.
+Nodes wrap Ndefs. Any `{|args| UGen}` function works as a behaviour, use the presets or write your own inline. Edges are directed, weighted, and typed (`\succession`, `\contrast`, `\variation`, `\transformation`). Edges can carry a **paramMap** that propagates parameter values when a walker crosses them.
 
 ### Traversal
 
-A walker is a Routine that moves through the graph, activating nodes and optionally deactivating them on departure. Edge selection is weighted by edge weight and modulated by **contrast bias** — recently visited nodes are penalized. Multiple walkers can run simultaneously for polyphonic textures.
+A walker is a Routine that moves through the graph, activating nodes and optionally deactivating them on departure. Edge selection is weighted by edge weight and modulated by **contrast bias**, recently visited nodes are penalized. Multiple walkers can run simultaneously for polyphonic textures.
 
 ### Routing & Processing
-
-Call `g.initRouting` to allocate a private audio bus. All nodes route through it to a master Ndef, where processors can be stacked:
 
 ```supercollider
 g.addProcess(\verb, {|in, mix = 0.3| FreeVerb2.ar(in[0], in[1], mix, 0.8, 0.5) });
@@ -95,42 +91,18 @@ Without `initRouting`, nodes play directly to hardware output (backward compatib
 
 ### Growth
 
-The graph can grow at runtime. `AcGrowth` provides network growth models:
-
 ```supercollider
 AcGrowth.preferentialAttachment(g, \newNode, myFunc, (freq: 440), 2);
 AcGrowth.smallWorldRewire(g, 0.1);
 AcGrowth.decayEdges(g, 1.0);  // weaken edges, remove dead ones
 ```
 
-### Observers
-
-Attach server-side analysis to any node. The response function can modify the graph:
-
-```supercollider
-o = AcObserver(\amp, g, \drone, a.observers[\features][\amplitude], {|vals, graph, obs|
-    if(vals[0] > 0.5) { AcGrowth.preferentialAttachment(graph, \new, myFunc, ()) }
-});
-o.start;
-```
-
 ### Visualization
 
 ```supercollider
-// Live GUI — active nodes glow, walker positions pulse, edges colored by type
+// Live GUI, active nodes glow, walker positions pulse, edges colored by type
 s = g.scope([walker1, walker2]);
 s.layoutForce(120);  // force-directed layout
-
-// Graphviz DOT export
-g.saveDot("~/Desktop/graph.dot".standardizePath);
-```
-
-### Causality
-
-Every action (node add/remove, connect, activate, growth, observer trigger) creates an `AcEvent` with type, target, cause, and timestamp:
-
-```supercollider
-g.eventLog(20);  // print last 20 events
 ```
 
 ## Custom Behaviours
@@ -161,12 +133,12 @@ In `examples/`
 | # | What | How |
 |---|------|---------------------|
 | 01 | Triangle | Minimal 3-node cycle with param mapping |
-| 02 | Two Walkers | Polyphonic traversal — slow layering + fast contrast |
+| 02 | Two Walkers | Polyphonic traversal, slow layering + fast contrast |
 | 03 | Star | Central hub with satellites |
 | 04 | Growing Network | Rapid growth to 50+ nodes with 3 walkers and live scope |
 | 05 | Decay & Regrow | Self-reshaping network with edge decay and regrowth |
 | 06 | Observer Feedback | Amplitude analysis drives network growth |
-| 07 | Processing Chain | Master bus reverb, fold, delay — add/remove live |
+| 07 | Processing Chain | Master bus reverb, fold, delay, add/remove live |
 | 08 | Custom Behaviours | Entirely hand-written synths, no presets |
 
 ## Tests
