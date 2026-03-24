@@ -20,7 +20,6 @@ AcObserver {
 			^this
 		};
 
-		// create analysis Ndef that reads from the target node
 		Ndef(analysisKey, {
 			var sig = Ndef(nodeId).ar;
 			var values = SynthDef.wrap(feature, prependArgs: [sig]);
@@ -28,7 +27,6 @@ AcObserver {
 			Silent.ar;
 		}).play;
 
-		// set up OSC listener
 		oscFunc = OSCFunc({|msg|
 			var values = msg[3..];
 			action.value(values, graph, this);

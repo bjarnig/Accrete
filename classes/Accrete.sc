@@ -17,7 +17,6 @@ Accrete {
 	}
 
 	loadAverse {|interpreter, bufferPath|
-		// load buffers first, then compile behaviours that reference ~hpb
 		averse = ();
 		averse[\loadBuffers] = {|ev, server, path|
 			var hpb = Dictionary();

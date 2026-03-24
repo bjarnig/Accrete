@@ -9,8 +9,6 @@ AcGraph {
 		)
 	}
 
-	// ---- routing ----
-
 	initRouting {|masterName|
 		masterKey = masterName ?? { ("ac_master_" ++ this.identityHash.abs).asSymbol };
 		bus = Bus.audio(Server.default, channels);
@@ -48,12 +46,9 @@ AcGraph {
 		};
 	}
 
-	// the output bus index that nodes should play to
 	nodeBus {
 		^if(bus.notNil) { bus.index } { out }
 	}
-
-	// ---- nodes ----
 
 	addNode {|id, behaviour, params, nodeChannels|
 		var node = AcNode(id, behaviour, params, nodeChannels ?? { channels });
@@ -71,8 +66,6 @@ AcGraph {
 			events.add(AcEvent(\removeNode, id, nil));
 		};
 	}
-
-	// ---- edges ----
 
 	connect {|from, to, weight = 1.0, type = \succession, paramMap, decayRate = 0.0|
 		var edge = AcEdge(from, to, weight, type, paramMap, decayRate);
@@ -94,8 +87,6 @@ AcGraph {
 		^edges.select {|e| e.to == id }
 	}
 
-	// ---- queries ----
-
 	degree {|id|
 		^(this.edgesFrom(id).size + this.edgesTo(id).size)
 	}
@@ -109,8 +100,6 @@ AcGraph {
 	activeNodes {
 		^nodes.select {|n| n.active }
 	}
-
-	// ---- lifecycle ----
 
 	stopAll {|fadeTime = 2|
 		nodes.do {|node|
@@ -133,8 +122,6 @@ AcGraph {
 		this.stopAll(fadeTime);
 		this.freeRouting;
 	}
-
-	// ---- display ----
 
 	print {
 		"--- AcGraph ---".postln;
@@ -163,8 +150,6 @@ AcGraph {
 		"--- Event Log (last %) ---".format(recent.size).postln;
 		recent.do {|ev| ("  " ++ ev).postln };
 	}
-
-	// ---- visualization ----
 
 	scope {|traversals, width = 700, height = 700|
 		var s = AcScope(this, traversals, width, height);

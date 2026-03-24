@@ -17,65 +17,45 @@ AcTraversal {
 		this.initDefaultTransitions;
 	}
 
-	// default transitions per edge type
-
 	initDefaultTransitions {
 
-		// succession: smooth crossfade with gradual param interpolation
 		transitions[\succession] = {|from, to, edge, trav|
 			var dur = trav.fadeTime;
-			// start new node fading in
 			to.activate(trav.graph.nodeBus, dur);
-			// interpolate params over the fade duration
 			trav.interpolateParams(from, to, edge, dur);
-			// fade out old node alongside
 			if(trav.deactivateOnLeave) {
 				from.deactivate(dur);
 			};
-			// wait for crossfade to complete
 			dur.wait;
 		};
 
-		// contrast: quick cut, brief silence, then new node
 		transitions[\contrast] = {|from, to, edge, trav|
 			var gap = trav.fadeTime * 0.25;
-			// cut the old node fast
 			if(trav.deactivateOnLeave) {
 				from.deactivate(gap);
 			};
-			// silence gap
 			gap.wait;
 			(gap * rrand(0.5, 2.0)).wait;
-			// new node enters abruptly
 			to.activate(trav.graph.nodeBus, gap);
 			gap.wait;
 		};
 
-		// variation: long overlap — old node morphs params, both ring together
 		transitions[\variation] = {|from, to, edge, trav|
 			var dur = trav.fadeTime * 2;
-			// activate new alongside old
 			to.activate(trav.graph.nodeBus, dur);
-			// morph old node's params toward new node's values
 			trav.morphParams(from, to, edge, dur * 0.7);
-			// keep both alive for the overlap
 			(dur * 0.3).wait;
-			// then fade old
 			if(trav.deactivateOnLeave) {
 				from.deactivate(dur);
 			};
 			dur.wait;
 		};
 
-		// transformation: long simultaneous crossfade with full param sweep
 		transitions[\transformation] = {|from, to, edge, trav|
 			var dur = trav.fadeTime * 3;
 			var halfDur = dur * 0.5;
-			// new node fades in slowly
 			to.activate(trav.graph.nodeBus, dur);
-			// sweep mapped params from source to target over the full duration
 			trav.interpolateParams(from, to, edge, dur, 40);
-			// old node fades out over second half
 			if(trav.deactivateOnLeave) {
 				halfDur.wait;
 				from.deactivate(halfDur);
@@ -85,8 +65,6 @@ AcTraversal {
 			};
 		};
 	}
-
-	// walking
 
 	walk {|startId|
 		var node;
@@ -101,7 +79,6 @@ AcTraversal {
 					running = false;
 					nil
 				} {
-					// activate first node directly (no transition on entry)
 					if(node.active.not) {
 						node.activate(graph.nodeBus, fadeTime);
 					};
@@ -109,17 +86,14 @@ AcTraversal {
 					history.add(currentNode);
 					if(history.size > maxHistory) { history.removeAt(0) };
 
-					// dwell at current node
 					durFunc.value(currentNode, node).wait;
 
-					// choose next
 					currentNode = this.chooseNext(currentNode);
 					if(currentNode.isNil) {
 						"AcTraversal(%): no edges from %, stopping".format(id, history.last).warn;
 						running = false;
 						nil
 					} {
-						// execute transition
 						this.doTransition(node, graph.nodes[currentNode],
 							graph.edgesFrom(node.id).detect {|e| e.to == currentNode }
 						);
@@ -137,7 +111,6 @@ AcTraversal {
 
 		if(toNode.isNil) { ^this };
 
-		// priority: edge-specific transition > type default > simple fallback
 		transFn = if(edge.notNil and: { edge.transition.notNil }) {
 			edge.transition
 		} {
@@ -147,10 +120,6 @@ AcTraversal {
 		transFn.value(fromNode, toNode, edge, this);
 	}
 
-	// parameter interpolation
-
-	// interpolateParams: apply paramMap from edge, interpolating over duration
-	// source param value → target param, gradually over `steps` increments
 	interpolateParams {|fromNode, toNode, edge, dur, steps = 20|
 		var stepDur, startVals;
 		if(edge.isNil or: { edge.paramMap.isNil } or: { edge.paramMap.isEmpty }) { ^this };
@@ -158,7 +127,6 @@ AcTraversal {
 		stepDur = dur / steps;
 		startVals = Dictionary.new;
 
-		// capture start values on the target node
 		edge.paramMap.keysValuesDo {|srcParam, dstParam|
 			startVals[dstParam] = toNode.params[dstParam];
 		};
@@ -178,13 +146,10 @@ AcTraversal {
 		};
 	}
 
-	// morphParams: morph the OLD node's params toward the NEW node's values
-	// creates an evolving "goodbye" — the departing node drifts toward the incoming one
 	morphParams {|fromNode, toNode, edge, dur, steps = 20|
 		var stepDur, startVals, sharedKeys;
 		stepDur = dur / steps;
 
-		// find params that both nodes share
 		sharedKeys = fromNode.params.keys.asArray.select {|k|
 			toNode.params[k].notNil and: { fromNode.params[k].isNumber } and: { toNode.params[k].isNumber }
 		};
@@ -207,8 +172,6 @@ AcTraversal {
 		};
 	}
 
-	// edge selection
-
 	chooseNext {|fromId|
 		var outEdges = graph.edgesFrom(fromId);
 		var weights, recencyPenalty, combined, total, roll, cumulative;
@@ -216,7 +179,6 @@ AcTraversal {
 
 		weights = outEdges.collect(_.weight);
 
-		// modulate weights by recency — recently visited nodes get lower weight
 		recencyPenalty = outEdges.collect {|edge|
 			var idx = history.indexOf(edge.to);
 			if(idx.isNil) { 1.0 } {
@@ -226,9 +188,8 @@ AcTraversal {
 		};
 
 		combined = weights * recencyPenalty;
-		combined = combined.max(0.01); // floor to avoid zero
+		combined = combined.max(0.01);
 
-		// weighted random selection
 		total = combined.sum;
 		roll = total.rand;
 		cumulative = 0;
@@ -239,8 +200,6 @@ AcTraversal {
 
 		^outEdges.last.to
 	}
-
-	// lifecycle
 
 	stop {
 		if(routine.notNil) { routine.stop };

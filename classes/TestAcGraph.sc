@@ -7,8 +7,6 @@ TestAcGraph : UnitTest {
 		dummyFunc = { Silent.ar };
 	}
 
-	// ---- AcEvent ----
-
 	test_event_creation {
 		var ev = AcEvent(\test, \target, \cause, (foo: 1));
 		this.assertEquals(ev.type, \test, "event type");
@@ -17,8 +15,6 @@ TestAcGraph : UnitTest {
 		this.assert(ev.timestamp > 0, "event has timestamp");
 		this.assertEquals(ev.data[\foo], 1, "event data");
 	}
-
-	// ---- AcEdge ----
 
 	test_edge_creation {
 		var e = AcEdge(\a, \b, 0.7, \contrast, Dictionary[\freq -> \freq], 0.1);
@@ -41,11 +37,9 @@ TestAcGraph : UnitTest {
 		var e = AcEdge(\a, \b, 1.0, \succession, nil, 0.3);
 		e.decay(1.0);
 		this.assertFloatEquals(e.weight, 0.7, "weight after decay");
-		e.decay(5.0); // should clamp to 0
+		e.decay(5.0);
 		this.assertFloatEquals(e.weight, 0.0, "weight floors at 0");
 	}
-
-	// ---- AcNode ----
 
 	test_node_creation {
 		var n = AcNode(\test, dummyFunc, (freq: 440));
@@ -61,8 +55,6 @@ TestAcGraph : UnitTest {
 		n.set(\freq, 880);
 		this.assertEquals(n.params[\freq], 880, "param updated while inactive");
 	}
-
-	// ---- AcGraph: node management ----
 
 	test_addNode {
 		var node = graph.addNode(\n1, dummyFunc, (freq: 60));
@@ -92,8 +84,6 @@ TestAcGraph : UnitTest {
 		graph.removeNode(\doesNotExist);
 		this.assertEquals(graph.nodes.size, 0, "no crash on removing nonexistent node");
 	}
-
-	// ---- AcGraph: edges ----
 
 	test_connect {
 		var edge;
@@ -148,8 +138,6 @@ TestAcGraph : UnitTest {
 		this.assertEquals(graph.edgesTo(\n1).size, 0, "n1 has 0 incoming edges");
 	}
 
-	// ---- AcGraph: queries ----
-
 	test_degree {
 		graph.addNode(\n1, dummyFunc);
 		graph.addNode(\n2, dummyFunc);
@@ -174,15 +162,12 @@ TestAcGraph : UnitTest {
 		this.assert(nb.includesEqual(\n3), "n3 is neighbor of n1");
 	}
 
-	// ---- AcGraph: event log ----
-
 	test_eventLog_records_all_operations {
 		graph.addNode(\n1, dummyFunc);
 		graph.addNode(\n2, dummyFunc);
 		graph.connect(\n1, \n2);
 		graph.disconnect(\n1, \n2);
 		graph.removeNode(\n2);
-		// addNode x2, connect, disconnect, removeNode = 5
 		this.assertEquals(graph.events.size, 5, "all operations logged");
 	}
 
@@ -195,8 +180,6 @@ TestAcGraph : UnitTest {
 		this.assert(types.includesEqual(\addNode), "has addNode event");
 		this.assert(types.includesEqual(\connect), "has connect event");
 	}
-
-	// ---- AcGraph: complex topologies ----
 
 	test_triangle_graph {
 		graph.addNode(\a, dummyFunc);
@@ -274,7 +257,6 @@ TestAcGrowth : UnitTest {
 
 	test_preferentialAttachment_prefers_high_degree {
 		var hubEdgesBefore, hubEdgesAfter;
-		// create a hub
 		graph.addNode(\hub, dummyFunc);
 		5.do {|i|
 			var id = ("spoke" ++ i).asSymbol;
@@ -282,8 +264,6 @@ TestAcGrowth : UnitTest {
 			graph.connect(\hub, id);
 			graph.connect(id, \hub);
 		};
-		// hub has degree 10, spokes have degree 2
-		// add many nodes and check hub gets more connections
 		hubEdgesBefore = graph.degree(\hub);
 		10.do {|i|
 			AcGrowth.preferentialAttachment(graph, ("new" ++ i).asSymbol, dummyFunc, nil, 1);
@@ -310,18 +290,15 @@ TestAcGrowth : UnitTest {
 
 	test_smallWorldRewire {
 		var ids, originalTargets, newTargets;
-		// build a ring
 		ids = (0..4).collect {|i| ("n" ++ i).asSymbol };
 		ids.do {|id| graph.addNode(id, dummyFunc) };
 		ids.size.do {|i|
 			graph.connect(ids[i], ids[(i + 1) % ids.size]);
 		};
 		originalTargets = graph.edges.collect(_.to);
-		// rewire with probability 1.0 to guarantee some changes
 		AcGrowth.smallWorldRewire(graph, 1.0);
 		newTargets = graph.edges.collect(_.to);
 		this.assertEquals(graph.edges.size, 5, "same number of edges");
-		// at least some should have changed (probabilistic, but p=1.0 with 5 edges)
 		this.assert(newTargets != originalTargets, "some edges rewired");
 	}
 
@@ -330,10 +307,8 @@ TestAcGrowth : UnitTest {
 		graph.addNode(\b, dummyFunc);
 		graph.addNode(\c, dummyFunc);
 		graph.connect(\a, \b, 0.5, \succession, nil, 0.3);
-		graph.connect(\b, \c, 1.0, \succession, nil, 0.0); // no decay
+		graph.connect(\b, \c, 1.0, \succession, nil, 0.0);
 		AcGrowth.decayEdges(graph, 2.0);
-		// edge a->b: 0.5 - 0.3*2 = -0.1 -> 0 -> removed
-		// edge b->c: 1.0 - 0*2 = 1.0 -> kept
 		this.assertEquals(graph.edges.size, 1, "decayed edge removed");
 		this.assertEquals(graph.edges[0].from, \b, "surviving edge is b->c");
 	}
@@ -387,7 +362,7 @@ TestAcTraversal : UnitTest {
 		graph.addNode(\a, dummyFunc);
 		graph.addNode(\b, dummyFunc);
 		graph.addNode(\c, dummyFunc);
-		graph.connect(\a, \b, 100.0); // overwhelmingly weighted
+		graph.connect(\a, \b, 100.0);
 		graph.connect(\a, \c, 0.001);
 		t = AcTraversal(\t1, graph);
 		counts = Dictionary[\b -> 0, \c -> 0];
@@ -407,7 +382,6 @@ TestAcTraversal : UnitTest {
 		graph.connect(\a, \b, 0.5);
 		graph.connect(\a, \c, 0.5);
 		t = AcTraversal(\t1, graph, contrastBias: 0.9);
-		// fill history with \b to penalize it
 		10.do { t.history.add(\b) };
 		counts = Dictionary[\b -> 0, \c -> 0];
 		100.do {
@@ -433,7 +407,6 @@ TestAcTraversal : UnitTest {
 		graph.addNode(\a, dummyFunc);
 		t = AcTraversal(\t1, graph, maxHistory: 4);
 		10.do {|i| t.history.add(("n" ++ i).asSymbol) };
-		// manually enforce the limit as walk() would
 		while { t.history.size > t.maxHistory } { t.history.removeAt(0) };
 		this.assertEquals(t.history.size, 4, "history capped at maxHistory");
 	}

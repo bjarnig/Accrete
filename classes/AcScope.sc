@@ -3,11 +3,10 @@ AcScope {
 	var <>nodePositions, <>refreshRate, <>width, <>height, <>margin;
 	var <>nodeRadius, <>dragNode, <>dragOffset;
 
-	// color palette
 	classvar <>colorInactive, <>colorActive, <>colorEdge, <>colorTraversal, <>colorText, <>colorBg;
 
 	*initClass {
-		colorBg = Color.new255(23, 27, 33);           // #171b21
+		colorBg = Color.new255(23, 27, 33);
 		colorInactive = Color.new255(110, 120, 145);
 		colorActive = Color.new255(140, 225, 180);
 		colorEdge = Color.new255(80, 88, 100);
@@ -30,8 +29,6 @@ AcScope {
 		this.layoutCircular;
 	}
 
-	// ---- layouts ----
-
 	layoutCircular {
 		var keys = graph.nodes.keys.asArray.sort;
 		var cx = width * 0.5, cy = height * 0.5;
@@ -50,7 +47,6 @@ AcScope {
 		var velocities = IdentityDictionary.new;
 		var cx = width * 0.5, cy = height * 0.5;
 
-		// seed positions randomly if not already placed
 		keys.do {|key|
 			if(nodePositions[key].isNil) {
 				nodePositions[key] = Point(
@@ -62,7 +58,6 @@ AcScope {
 		};
 
 		iterations.do {
-			// repulsion between all node pairs
 			keys.do {|a, i|
 				keys.do {|b, j|
 					if(j > i) {
@@ -78,7 +73,6 @@ AcScope {
 				};
 			};
 
-			// attraction along edges
 			graph.edges.do {|edge|
 				var pa = nodePositions[edge.from], pb = nodePositions[edge.to];
 				if(pa.notNil and: { pb.notNil }) {
@@ -98,7 +92,6 @@ AcScope {
 				};
 			};
 
-			// gravity toward center
 			keys.do {|key|
 				var p = nodePositions[key];
 				var dx = cx - p.x, dy = cy - p.y;
@@ -108,7 +101,6 @@ AcScope {
 				);
 			};
 
-			// apply velocities
 			keys.do {|key|
 				var p = nodePositions[key], v = velocities[key];
 				nodePositions[key] = Point(
@@ -120,12 +112,10 @@ AcScope {
 		};
 	}
 
-	// place new nodes that have no position yet
 	layoutNew {
 		var unplaced = graph.nodes.keys.asArray.select {|k| nodePositions[k].isNil };
 		if(unplaced.notEmpty) {
 			unplaced.do {|key|
-				// place near a neighbor if possible, else center
 				var nb = graph.neighbors(key);
 				var placed = nb.select {|n| nodePositions[n].notNil };
 				if(placed.notEmpty) {
@@ -143,12 +133,9 @@ AcScope {
 					);
 				};
 			};
-			// run a few force iterations to settle
 			this.layoutForce(30);
 		};
 	}
-
-	// ---- drawing ----
 
 	open {
 		if(window.notNil and: { window.isClosed.not }) { window.front; ^this };
@@ -197,7 +184,6 @@ AcScope {
 				Pen.lineTo(pb);
 				Pen.stroke;
 
-				// arrowhead
 				dx = pb.x - pa.x;
 				dy = pb.y - pa.y;
 				mx = (dx.squared + dy.squared).sqrt.max(0.001);
@@ -243,7 +229,6 @@ AcScope {
 					Pen.addArc(pos, r, 0, 2pi);
 					Pen.stroke;
 
-					// label
 					Pen.color = colorTraversal.alpha_(0.8);
 					Pen.font = Font("Helvetica", 9);
 					Pen.stringAtPoint(trav.id.asString, Point(pos.x + r + 2, pos.y - 5));
@@ -259,7 +244,6 @@ AcScope {
 				var col, glow;
 
 				if(node.active) {
-					// active: bright, with glow proportional to activation count
 					glow = node.activationCount.linlin(0, 10, 0.3, 0.8).min(0.8);
 					col = colorActive;
 					Pen.fillColor = col.alpha_(glow * 0.3);
@@ -269,21 +253,17 @@ AcScope {
 					col = colorInactive;
 				};
 
-				// node circle
 				Pen.fillColor = col;
 				Pen.addArc(pos, nodeRadius, 0, 2pi);
 				Pen.fill;
 
-				// degree ring
 				Pen.strokeColor = col.alpha_(0.4);
 				Pen.width = graph.degree(key).linlin(0, 10, 0.5, 4.0).min(4);
 				Pen.addArc(pos, nodeRadius, 0, 2pi);
 				Pen.stroke;
 
-				// label
 				Pen.color = colorText;
 				Pen.font = Font("Helvetica", 11, true);
-				// center text roughly
 				Pen.stringCenteredIn(
 					key.asString,
 					Rect(pos.x - nodeRadius, pos.y - 6, nodeRadius * 2, 12)
@@ -301,8 +281,6 @@ AcScope {
 		);
 		Pen.stringAtPoint(str, Point(8, y));
 	}
-
-	// ---- interaction ----
 
 	onMouseDown {|x, y|
 		var click = Point(x, y);
@@ -326,8 +304,6 @@ AcScope {
 			if(userView.notNil) { userView.refresh };
 		};
 	}
-
-	// ---- refresh ----
 
 	startRefresh {
 		this.stopRefresh;

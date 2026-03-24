@@ -11,7 +11,6 @@ AcGrowth {
 		degrees = candidates.collect {|k| graph.degree(k).max(1) };
 		total = degrees.sum;
 
-		// select targets weighted by degree
 		chosen = Set.new;
 		numEdges.min(candidates.size).do {
 			var roll = total.rand, cumulative = 0;
