@@ -1,6 +1,6 @@
 # Accrete
 
-A graph-based system for SuperCollider , sound as behaviour in a dynamic network.
+A graph-based system for SuperCollider.
 
 ![Accrete, graph-based compositional engine for SuperCollider](docs/Accrete.png)
 

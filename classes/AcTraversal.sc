@@ -17,7 +17,7 @@ AcTraversal {
 		this.initDefaultTransitions;
 	}
 
-	// ---- default transitions per edge type ----
+	// default transitions per edge type
 
 	initDefaultTransitions {
 
@@ -86,7 +86,7 @@ AcTraversal {
 		};
 	}
 
-	// ---- walking ----
+	// walking
 
 	walk {|startId|
 		var node;
@@ -147,7 +147,7 @@ AcTraversal {
 		transFn.value(fromNode, toNode, edge, this);
 	}
 
-	// ---- parameter interpolation ----
+	// parameter interpolation
 
 	// interpolateParams: apply paramMap from edge, interpolating over duration
 	// source param value → target param, gradually over `steps` increments
@@ -207,7 +207,7 @@ AcTraversal {
 		};
 	}
 
-	// ---- edge selection ----
+	// edge selection
 
 	chooseNext {|fromId|
 		var outEdges = graph.edgesFrom(fromId);
@@ -240,7 +240,7 @@ AcTraversal {
 		^outEdges.last.to
 	}
 
-	// ---- lifecycle ----
+	// lifecycle
 
 	stop {
 		if(routine.notNil) { routine.stop };
