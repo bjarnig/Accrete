@@ -1,6 +1,6 @@
 # Accrete
 
-![AcScope — live graph visualization (nodes, edges, active states, traversal)](docs/ac-scope.png)
+![Accrete — graph-based compositional engine for SuperCollider](docs/Accrete.png)
 
 A graph-based system for SuperCollider. Sound is treated as behaviour in an evolving network. Compose by building and traversing a graph of generative sound processes.
 
