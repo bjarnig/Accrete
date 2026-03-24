@@ -1,14 +1,16 @@
 # Accrete
 
+A graph-based system for SuperCollider — sound as behaviour in an evolving network.
+
 ![Accrete, graph-based compositional engine for SuperCollider](docs/Accrete.png)
 
-A graph-based system for SuperCollider. Sound is treated as behaviour in an evolving network. Compose by building and traversing a graph of generative sound processes.
+Compose by building and traversing a graph of generative sound processes.
 
 ## Overview
 
 Accrete cexplores **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. 
 
-## Quick Start
+## Usage
 
 ```supercollider
 s.boot;
@@ -45,7 +47,7 @@ g.scope([t]);
 t.stop; g.free;
 ```
 
-## Architecture
+## System
 
 ### Classes
 
