@@ -15,14 +15,14 @@ Accrete cexplores **graph topology and traversal**. Nodes are generative synths,
 ```supercollider
 s.boot;
 
-// Load runtime libraries
+// Load
 a = Accrete(thisProcess.interpreter);
 
-// Create graph with bus routing
+// Create graph
 g = AcGraph(2, 0);
 g.initRouting(\master);
 
-// Add nodes (preset behaviours or your own functions)
+// Add nodes (preset behaviours or custom functions)
 g.addNode(\drone, a.behaviours[\drone], (freq: 55, amp: 0.3));
 g.addNode(\grain, a.behaviours[\grain], (freq: 800, density: 12, amp: 0.2));
 g.addNode(\pulse, a.behaviours[\pulse], (rate: 4, freq: 200, amp: 0.25));
@@ -36,7 +36,7 @@ g.connect(\pulse, \drone, 0.3, \variation);
 t = AcTraversal(\walk, g, { rrand(4.0, 8.0) }, fadeTime: 3);
 t.walk(\drone);
 
-// Add reverb to the whole graph
+// Add processing to the whole graph
 g.addProcess(\verb, a.processing[\verb]);
 g.setProcess(\verb, \mix, 0.4, \room, 30);
 
@@ -88,8 +88,6 @@ g.addProcess(\crush, {|in, bits = 12| in.round(2.pow(bits.neg)) });
 g.setProcess(\verb, \mix, 0.5);
 g.removeProcess(\crush);
 ```
-
-Without `initRouting`, nodes play directly to hardware output (backward compatible).
 
 ### Growth
 
