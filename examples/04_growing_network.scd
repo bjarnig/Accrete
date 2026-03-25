@@ -6,27 +6,23 @@
 */
 
 (
-s.waitForBoot {
-
 	var a = Accrete(thisProcess.interpreter);
 	var g = AcGraph();
 	var behaviourPool, typePool, walkers;
 
-	// behaviour templates — low amp so dozens can overlap safely
 	behaviourPool = [
-		[\drone,   { a.behaviours[\drone] },   { (freq: exprand(30, 200), drift: rrand(0.05, 0.3), amp: rrand(0.02, 0.06)) }],
-		[\grain,   { a.behaviours[\grain] },   { (freq: exprand(200, 4000), density: rrand(4, 30), dur: rrand(0.02, 0.1), amp: rrand(0.02, 0.05)) }],
-		[\pulse,   { a.behaviours[\pulse] },   { (freq: exprand(60, 800), rate: rrand(1, 12), decay: rrand(0.05, 0.5), amp: rrand(0.02, 0.05)) }],
-		[\shimmer, { a.behaviours[\shimmer] }, { (freq: exprand(800, 6000), mod: rrand(0.05, 0.5), feedback: rrand(0.3, 0.7), amp: rrand(0.01, 0.04)) }],
-		[\rumble,  { a.behaviours[\rumble] },  { (freq: exprand(15, 60), chaos: rrand(1.2, 1.8), amp: rrand(0.03, 0.06)) }],
-		[\breath,  { a.behaviours[\breath] },  { (freq: exprand(100, 3000), bw: rrand(50, 500), rate: rrand(0.05, 0.4), amp: rrand(0.02, 0.05)) }],
-		[\bell,    { a.behaviours[\bell] },    { (freq: exprand(200, 4000), decay: rrand(1, 8), amp: rrand(0.01, 0.04)) }],
-		[\crackle, { a.behaviours[\crackle] }, { (chaos: rrand(1.2, 1.95), density: rrand(5, 40), hpf: exprand(500, 8000), amp: rrand(0.02, 0.05)) }],
+		[\invdem,  { a.behaviours[\invdem] },  { (wfmult: exprand(0.05, 0.8), seqmult: rrand(3, 30), amp: rrand(0.1, 0.4)) }],
+		[\vpay,    { a.behaviours[\vpay] },    { (freq: exprand(4, 40), fmod: exprand(2, 60), ffrom: rrand(10, 200), fto: rrand(400, 4000), index: rrand(0.3, 2.0), amp: rrand(0.04, 0.15)) }],
+		[\pulse,   { a.behaviours[\pulse] },   { (freq: exprand(2, 24), fmod: exprand(80, 900), ffrom: rrand(8, 80), fto: rrand(40, 400), index: rrand(0.4, 1.4), amp: rrand(0.02, 0.05)) }],
+		[\shimmer, { a.behaviours[\shimmer] }, { (drive: rrand(12, 40), modLo: rrand(30, 90), modHi: rrand(90, 350), lpfFreq: exprand(400, 6000), amp: rrand(0.04, 0.12)) }],
+		[\rumble,  { a.behaviours[\rumble] },  { (rate: rrand(4, 22), trigMin: rrand(120, 800), trigMax: rrand(400, 2500), freq: exprand(12, 55), amp: rrand(0.03, 0.06)) }],
+		[\breath,  { a.behaviours[\breath] },  { (mod: exprand(80, 900), mf: rrand(0.15, 0.45), amp: rrand(0.25, 0.55), from: rrand(1, 6), to: rrand(8, 35)) }],
+		[\bell,    { a.behaviours[\bell] },    { (bfmin: exprand(200, 1200), bfmax: exprand(800, 4000), freq: exprand(4, 28), bw: rrand(6, 22), amp: rrand(0.15, 0.45)) }],
+		[\crackle, { a.behaviours[\crackle] }, { (dustRate: rrand(40, 220), crackle: rrand(0.75, 1.85), timeUp: rrand(2, 14), timeDown: rrand(3, 16), amp: rrand(0.02, 0.05)) }],
 	];
 
 	typePool = [\succession, \contrast, \variation, \transformation];
 
-	// seed: 3 connected nodes
 	3.do {|i|
 		var spec = behaviourPool.choose;
 		var id = ("s" ++ i).asSymbol;
@@ -36,7 +32,6 @@ s.waitForBoot {
 	g.connect(\s1, \s2, 0.6, \contrast);
 	g.connect(\s2, \s0, 0.5, \variation);
 
-	// 3 walkers — fast, medium, slow
 	walkers = [
 		AcTraversal(\fast, g, { rrand(1.5, 3.0) }, fadeTime: 1, contrastBias: 0.8),
 		AcTraversal(\mid,  g, { rrand(3.0, 6.0) }, fadeTime: 2, contrastBias: 0.5,
@@ -48,13 +43,11 @@ s.waitForBoot {
 	walkers[1].walk(\s1);
 	walkers[2].walk(\s2);
 
-	// scope
 	~scope = g.scope(walkers, 900, 900);
 	~scope.nodeRadius = 12;
 
-	// rapid growth: a new node every 1-3 seconds, up to 50 nodes
 	~grower = Routine({
-		var count = 3; // already have 3 seeds
+		var count = 3;
 
 		while { count < 50 } {
 			var spec = behaviourPool.choose;
@@ -65,7 +58,6 @@ s.waitForBoot {
 
 			AcGrowth.preferentialAttachment(g, id, spec[1].value, spec[2].value, numEdges);
 
-			// occasionally add extra cross-links for density
 			if(0.3.coin and: { g.nodes.size > 5 }) {
 				var keys = g.nodes.keys.asArray;
 				var a = keys.choose, b = keys.choose;
@@ -76,7 +68,6 @@ s.waitForBoot {
 
 			count = count + 1;
 
-			// print milestone every 10
 			if(count % 10 == 0) {
 				"--- % nodes, % edges ---".format(g.nodes.size, g.edges.size).postln;
 			};
@@ -84,7 +75,6 @@ s.waitForBoot {
 
 		"--- Growth complete: % nodes, % edges ---".format(g.nodes.size, g.edges.size).postln;
 
-		// optional: keep adding slowly after initial burst
 		loop {
 			rrand(8.0, 15.0).wait;
 			if(g.nodes.size < 80) {
@@ -98,7 +88,6 @@ s.waitForBoot {
 
 	~g = g;
 	~walkers = walkers;
-}
 )
 
 // inspect
@@ -113,3 +102,41 @@ s.waitForBoot {
 
 // stop
 ~scope.close; ~grower.stop; ~walkers.do(_.stop); ~g.stopAll;
+
+
+// ---- adding custom behaviours at runtime ----
+
+// any UGen function works as a behaviour — just pass it directly to addNode
+(
+	~g.addNode(\mysaw, {|freq = 220, width = 0.5, amp = 0.2|
+		var sig = VarSaw.ar([freq, freq * 1.003], 0, width);
+		LPF.ar(sig, freq * 4) * amp
+	}, (freq: 110, amp: 0.15));
+
+	~g.connect(\s0, \mysaw, 0.6, \succession);
+)
+
+// a feedback FM node
+(
+	~g.addNode(\fbfm, {|freq = 80, fb = 1.2, cutoff = 3000, amp = 0.15|
+		var sig = SinOscFB.ar([freq, freq * 1.5], fb);
+		LPF.ar(sig, cutoff) * amp
+	}, (freq: 60, fb: 0.8, amp: 0.12));
+
+	~g.connect(\mysaw, \fbfm, 0.7, \contrast);
+)
+
+// a filtered noise texture
+(
+	~g.addNode(\wash, {|density = 40, bpFreq = 800, bpRq = 0.3, amp = 0.1|
+		var src = Dust2.ar([density, density * 1.1]);
+		BPF.ar(src, bpFreq, bpRq) * amp / bpRq
+	}, (density: 30, bpFreq: 1200, amp: 0.08));
+
+	~g.connect(\fbfm, \wash, 0.5, \variation);
+	~g.connect(\wash, \s0, 0.4, \succession);
+)
+
+// update params on a running node
+~g.nodes[\mysaw].set(\freq, 330);
+~g.nodes[\wash].set(\bpFreq, 2400);

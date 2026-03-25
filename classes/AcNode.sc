@@ -13,19 +13,29 @@ AcNode {
 	activate {|output = 0, fadeTime = 2, cause|
 		Ndef(id).fadeTime = fadeTime;
 		Ndef(id).reshaping = \elastic;
+		if(Ndef(id).monitor.isPlaying.not) {
+			Ndef(id).play(output, channels);
+		};
 		Ndef(id).source = behaviour;
 		params.keysValuesDo {|key, val|
 			Ndef(id).set(key, val);
 		};
-		Ndef(id).play(output, channels);
 		active = true;
 		activationCount = activationCount + 1;
 		lastActivation = Main.elapsedTime;
+		"+ %".format(id).postln;
 	}
 
 	deactivate {|fadeTime = 2|
 		Ndef(id).fadeTime = fadeTime;
+		Ndef(id).source = nil;
+		active = false;
+		"- %".format(id).postln;
+	}
+
+	clear {
 		Ndef(id).stop;
+		Ndef(id).clear;
 		active = false;
 	}
 

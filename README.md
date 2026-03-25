@@ -8,7 +8,7 @@ Compose by building a graph of generative sound processes.
 
 ## Overview
 
-Accrete cexplores **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. 
+Accrete explores **graph topology and traversal**. Nodes are generative synths, edges are weighted connections, and walkers traverse the graph activating sounds. 
 
 ## Usage
 
@@ -23,18 +23,17 @@ g = AcGraph(2, 0);
 g.initRouting(\master);
 
 // Add nodes (preset behaviours or custom functions)
-g.addNode(\drone, a.behaviours[\drone], (freq: 55, amp: 0.3));
-g.addNode(\grain, a.behaviours[\grain], (freq: 800, density: 12, amp: 0.2));
-g.addNode(\pulse, a.behaviours[\pulse], (rate: 4, freq: 200, amp: 0.25));
+g.addNode(\invdem, a.behaviours[\invdem], (wfmult: 0.2, seqmult: 10, amp: 0.5));
+g.addNode(\vpay, a.behaviours[\vpay], (freq: 10, fmod: 10, ffrom: 20, fto: 2250, index: 0.8, amp: 0.2));
+g.addNode(\pulse, a.behaviours[\pulse], (freq: 5, fmod: 400, ffrom: 20, fto: 50, amp: 0.25));
 
-// Connect with typed, weighted edges
-g.connect(\drone, \grain, 0.7, \succession, Dictionary[\freq -> \freq]);
-g.connect(\grain, \pulse, 0.5, \contrast);
-g.connect(\pulse, \drone, 0.3, \variation);
+g.connect(\invdem, \vpay, 0.7, \succession);
+g.connect(\vpay, \pulse, 0.5, \contrast);
+g.connect(\pulse, \invdem, 0.3, \variation);
 
 // Walk the graph, sound transitions as the walker moves
 t = AcTraversal(\walk, g, { rrand(4.0, 8.0) }, fadeTime: 3);
-t.walk(\drone);
+t.walk(\invdem);
 
 // Add processing to the whole graph
 g.addProcess(\verb, a.processing[\verb]);
@@ -67,7 +66,7 @@ t.stop; g.free;
 
 | File | Contents |
 |------|----------|
-| **Behaviours.scd** | 8 synthesis behaviours: drone, grain, pulse, shimmer, rumble, breath, bell, crackle |
+| **Behaviours.scd** | 8 behaviours: invdem (DemandEnvGen waveform), vpay (PM splay), pulse (PM ticks), shimmer (GravityGrid sparkle), rumble (gravities), breath (DemandEnv leaf), bell (invities), crackle (gas) |
 | **Processing.scd** | 6 filter effects: verb, fold, delay, filter, shift, crush |
 | **Observers.scd** | 6 feature extractors: amplitude, pitch, centroid, flatness, onsets, zeroCrossing |
 | **GrowthModels.scd** | Convenience wrappers around AcGrowth class methods |

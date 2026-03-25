@@ -120,6 +120,10 @@ AcGraph {
 
 	free {|fadeTime = 2|
 		this.stopAll(fadeTime);
+		{
+			fadeTime.wait;
+			nodes.do {|node| node.clear };
+		}.fork;
 		this.freeRouting;
 	}
 

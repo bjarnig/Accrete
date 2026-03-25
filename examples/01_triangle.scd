@@ -1,34 +1,29 @@
 /*
 	Triangle — 3 nodes in a cycle.
-	A walker loops drone → grain → pulse → drone...
+	A walker loops invdem → vpay → pulse → invdem...
 	Each edge carries a param mapping so pitch flows through the network.
 */
 
 (
-s.waitForBoot {
 
 	var a = Accrete(thisProcess.interpreter);
 	var g = AcGraph();
 
-	// three nodes
-	g.addNode(\drone,  a.behaviours[\drone],  (freq: 55, drift: 0.08, amp: 0.3));
-	g.addNode(\grain,  a.behaviours[\grain],  (freq: 880, density: 15, amp: 0.2));
-	g.addNode(\pulse,  a.behaviours[\pulse],  (freq: 220, rate: 3, decay: 0.4, amp: 0.25));
+	g.addNode(\invdem, a.behaviours[\invdem], (wfmult: 0.2, seqmult: 10, amp: 0.5));
+	g.addNode(\vpay,   a.behaviours[\vpay],   (freq: 10, fmod: 10, ffrom: 20, fto: 2250, index: 0.8, amp: 0.2));
+	g.addNode(\pulse,  a.behaviours[\pulse],  (freq: 6, fmod: 400, ffrom: 24, fto: 140, index: 0.9, amp: 0.25));
 
-	// cycle with param flow: freq propagates
-	g.connect(\drone, \grain, 0.8, \succession, Dictionary[\freq -> \freq]);
-	g.connect(\grain, \pulse, 0.6, \contrast);
-	g.connect(\pulse, \drone, 0.5, \variation, Dictionary[\freq -> \freq]);
+	g.connect(\invdem, \vpay, 0.8, \succession);
+	g.connect(\vpay, \pulse, 0.6, \succession, Dictionary[\freq -> \freq]);
+	g.connect(\pulse, \invdem, 0.5, \succession);
 
-	// walk
 	~t = AcTraversal(\walk, g, { rrand(5.0, 9.0) }, fadeTime: 3);
-	~t.walk(\drone);
+	~t.walk(\invdem);
 
 	~g = g;
 	g.print;
-}
+
 )
 
 // stop
 ~t.stop; ~g.stopAll;
-::

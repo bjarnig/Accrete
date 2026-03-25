@@ -6,49 +6,39 @@
 */
 
 (
-s.waitForBoot {
-
 	var a = Accrete(thisProcess.interpreter);
 
-	// graph with routing: all nodes → bus → master Ndef → out 0
 	var g = AcGraph(2, 0);
 	g.initRouting(\master);
 
-	// build a small network
-	g.addNode(\drone,   a.behaviours[\drone],   (freq: 55, drift: 0.1, amp: 0.3));
-	g.addNode(\grain,   a.behaviours[\grain],   (freq: 900, density: 14, amp: 0.2));
-	g.addNode(\pulse,   a.behaviours[\pulse],   (freq: 150, rate: 5, decay: 0.3, amp: 0.25));
-	g.addNode(\shimmer, a.behaviours[\shimmer], (freq: 2800, mod: 0.15, feedback: 0.5, amp: 0.15));
-	g.addNode(\bell,    a.behaviours[\bell],    (freq: 1200, decay: 5, amp: 0.15));
+	g.addNode(\invdem,  a.behaviours[\invdem],  (wfmult: 0.2, seqmult: 10, amp: 0.4));
+	g.addNode(\vpay,    a.behaviours[\vpay],    (freq: 12, fmod: 10, ffrom: 20, fto: 2250, index: 0.8, amp: 0.2));
+	g.addNode(\pulse,   a.behaviours[\pulse],   (freq: 6, fmod: 380, ffrom: 22, fto: 130, amp: 0.25));
+	g.addNode(\shimmer, a.behaviours[\shimmer], (drive: 25, modLo: 48, modHi: 200, lpfFreq: 2800, amp: 0.15));
+	g.addNode(\bell,    a.behaviours[\bell],    (bfmin: 520, bfmax: 2600, freq: 11, amp: 0.15));
 
-	g.connect(\drone, \grain, 0.7, \succession);
-	g.connect(\grain, \pulse, 0.5, \contrast);
+	g.connect(\invdem, \vpay, 0.7, \succession);
+	g.connect(\vpay, \pulse, 0.5, \contrast);
 	g.connect(\pulse, \shimmer, 0.6, \variation);
 	g.connect(\shimmer, \bell, 0.4, \transformation);
-	g.connect(\bell, \drone, 0.5, \succession);
+	g.connect(\bell, \invdem, 0.5, \succession);
 
-	// walker
 	~t = AcTraversal(\walk, g,
 		durFunc: { rrand(4.0, 8.0) },
 		fadeTime: 3,
-		deactivateOnLeave: false  // layer up
+		deactivateOnLeave: false
 	);
-	~t.walk(\drone);
+	~t.walk(\invdem);
 
-	// --- add processors one by one ---
-
-	// reverb: the whole graph gets a wash
 	g.addProcess(\verb, a.processing[\verb]);
 	g.setProcess(\verb, \room, 40, \damp, 0.4, \mix, 0.4);
 
-	// gentle fold distortion
 	g.addProcess(\fold, a.processing[\fold]);
 	g.setProcess(\fold, \foldFreq, 12, \amount, 0.3);
 
 	~g = g;
 	~scope = g.scope([~t]);
 	g.print;
-}
 )
 
 // ---- live tweaking (evaluate these one at a time) ----
@@ -58,23 +48,23 @@ s.waitForBoot {
 
 // add a frequency shifter
 (
-var a = Accrete(thisProcess.interpreter);
-~g.addProcess(\shift, a.processing[\shift]);
-~g.setProcess(\shift, \shiftFreq, 50, \mod, 0.3);
+	var a = Accrete(thisProcess.interpreter);
+	~g.addProcess(\shift, a.processing[\shift]);
+	~g.setProcess(\shift, \shiftFreq, 50, \mod, 0.3);
 )
 
 // add bit crusher
 (
-var a = Accrete(thisProcess.interpreter);
-~g.addProcess(\crush, a.processing[\crush]);
-~g.setProcess(\crush, \bits, 10, \rate, 12000);
+	var a = Accrete(thisProcess.interpreter);
+	~g.addProcess(\crush, a.processing[\crush]);
+	~g.setProcess(\crush, \bits, 10, \rate, 12000);
 )
 
 // add delay
 (
-var a = Accrete(thisProcess.interpreter);
-~g.addProcess(\delay, a.processing[\delay]);
-~g.setProcess(\delay, \delayTime, 0.35, \feedback, 0.45);
+	var a = Accrete(thisProcess.interpreter);
+	~g.addProcess(\delay, a.processing[\delay]);
+	~g.setProcess(\delay, \delayTime, 0.35, \feedback, 0.45);
 )
 
 // remove the fold
